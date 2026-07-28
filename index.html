@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>M/V KALYANI — RECOVERED SYSTEMS LOG</title>
+<meta name="description" content="Kalyani Valath — portfolio, framed as the recovered systems log of an abandoned autonomous vessel." />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Ambient chrome: scanlines / vignette / fog, purely decorative -->
+  <div class="crt-overlay" aria-hidden="true"></div>
+  <div class="fog-layer" aria-hidden="true"></div>
+
+  <!-- BOOT SEQUENCE -->
+  <section id="boot-screen" class="boot-screen" aria-live="polite">
+    <pre id="boot-log" class="boot-log"></pre>
+    <button id="skip-boot" class="skip-boot" type="button">SKIP</button>
+  </section>
+
+  <!-- MAIN CONSOLE (hidden until boot completes) -->
+  <main id="console" class="console hidden">
+
+    <header class="console-header">
+      <div class="header-row">
+        <div class="vessel-id">
+          <span class="label">VESSEL</span>
+          <span class="value">M/V KALYANI</span>
+        </div>
+        <div class="hull-status">
+          <span class="label">HULL INTEGRITY</span>
+          <span class="value" id="hull-integrity">--%</span>
+        </div>
+        <div class="clock" id="clock">00:00:00</div>
+      </div>
+      <div class="identity-strip">
+        <span class="operator-name">KALYANI VALATH</span>
+        <span class="divider">//</span>
+        <span class="operator-role">CS — AUTONOMOUS SYSTEMS / ROBOTICS / AI · UNIVERSITY OF OKLAHOMA · EXP. DEC 2026</span>
+        <span class="divider">//</span>
+        <a href="mailto:kalyani.valath@gmail.com">EMAIL</a>
+        <a href="https://github.com/kalyanivalath" target="_blank" rel="noopener">GITHUB</a>
+        <a href="https://linkedin.com/in/kalyanivalath" target="_blank" rel="noopener">LINKEDIN</a>
+      </div>
+    </header>
+
+    <div class="console-body">
+
+      <!-- System list / sidebar -->
+      <nav class="system-list" id="system-list" aria-label="Ship systems">
+        <!-- populated by app.js -->
+      </nav>
+
+      <!-- Panel viewport -->
+      <section class="panel-viewport" id="panel-viewport">
+        <div class="panel-placeholder">
+          <p>&gt; SELECT A SYSTEM TO REBOOT.</p>
+          <p class="dim">Nothing is aboard to run this ship but the ship. That's the point.</p>
+          <p class="dim">Hull integrity climbs as each system comes back online.</p>
+        </div>
+      </section>
+
+    </div>
+
+    <footer class="console-footer">
+      <span id="reduced-motion-note" class="reduced-motion-note hidden">STATIC DISPLAY MODE — MOTION REDUCED</span>
+      <div class="footer-actions">
+        <button id="audio-toggle" class="audio-toggle" type="button" aria-pressed="false">AMBIENCE: OFF</button>
+        <button id="plain-view-toggle" class="plain-toggle" type="button">PREFER A PLAIN RESUME?</button>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- One-time prompt offering the plain view; dismissible, remembered via localStorage -->
+  <div id="plain-prompt" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="plain-prompt-title">
+    <div class="modal-box">
+      <p id="plain-prompt-title" class="modal-title">&gt; INCOMING TRANSMISSION</p>
+      <p class="modal-body">Prefer a straightforward resume instead of digging through a derelict ship? No hard feelings.</p>
+      <div class="modal-actions">
+        <button id="plain-prompt-accept" class="modal-btn" type="button">SHOW ME THE RESUME</button>
+        <button id="plain-prompt-dismiss" class="modal-btn ghost" type="button">STAY IN THE TERMINAL</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAIN RESUME VIEW (hidden until toggled) -->
+  <section id="resume-view" class="resume-view hidden" aria-label="Plain resume view">
+    <div class="resume-inner" id="resume-inner">
+      <!-- populated by app.js -->
+    </div>
+  </section>
+
+  <!-- Full-screen takeover shown once every system has been opened/repaired.
+       Pure CSS/JS power-surge animation — no 3D geometry, no CDN dependency,
+       just phosphor-green light sweeping across the screen and a scatter of
+       "system" lights (generated in app.js) switching on in sequence. -->
+  <section id="recovery-scene" class="recovery-scene hidden" role="dialog" aria-modal="true" aria-label="Full recovery">
+    <div class="power-surge" id="power-surge" aria-hidden="true">
+      <div class="surge-backdrop"></div>
+      <div class="surge-lights" id="surge-lights"><!-- populated by app.js --></div>
+      <div class="surge-wave"></div>
+      <div class="surge-flash"></div>
+    </div>
+    <div class="depth-vignette" aria-hidden="true"></div>
+
+    <div class="recovery-message" id="recovery-message">
+      <p id="full-recovery-title" class="modal-title complete">&gt; HULL INTEGRITY: 100%</p>
+      <p class="modal-body">Did you like this? Email me.</p>
+      <div class="modal-actions">
+        <a class="modal-btn" href="mailto:kalyani.valath@gmail.com">EMAIL KALYANI</a>
+        <a class="modal-btn" href="https://linkedin.com/in/kalyanivalath" target="_blank" rel="noopener">LINKEDIN</a>
+        <button id="full-recovery-close" class="modal-btn ghost" type="button">BACK TO THE SHIP</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="js/data.js"></script>
+  <script src="js/panels/pointcloud.js" defer></script>
+  <script src="js/panels/gesture.js" defer></script>
+  <script src="js/panels/simcore.js" defer></script>
+  <script src="js/app.js" defer></script>
+</body>
+</html>
