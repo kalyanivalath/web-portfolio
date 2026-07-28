@@ -44,7 +44,6 @@
   function runBoot() {
     const bootLog = document.getElementById("boot-log");
     const bootScreen = document.getElementById("boot-screen");
-    const consoleEl = document.getElementById("console");
     const skipBtn = document.getElementById("skip-boot");
 
     let finished = false;
@@ -53,8 +52,13 @@
       if (finished) return;
       finished = true;
       bootScreen.classList.add("hidden");
-      consoleEl.classList.remove("hidden");
-      initConsole();
+      initConsole(); // wire up the terminal regardless of which view lands first
+
+      if (REDUCED_MOTION) {
+        showTerminalTopView();
+        return;
+      }
+      attemptCockpit();
     }
 
     skipBtn.addEventListener("click", finish);
@@ -606,6 +610,121 @@
     safeStorage(() => window.localStorage.setItem(PLAIN_PROMPT_KEY, "1"));
   }
 
+  // ---------------- Cockpit ----------------
+  // The default landing view when WebGL + motion are available: a single
+  // 3D captain's-chair scene (js/panels/cockpit.js) with four controls that
+  // open overlay panels. PROJECTS just jumps into the terminal below, since
+  // that's already the full project-browsing experience (CRYPTO decrypt
+  // gate included) — no need to rebuild it a second time in 3D.
+
+  function showCockpitTopView() {
+    document.getElementById("cockpit-view").classList.remove("hidden");
+    document.getElementById("console").classList.add("hidden");
+  }
+
+  function showTerminalTopView() {
+    document.getElementById("cockpit-view").classList.add("hidden");
+    document.getElementById("console").classList.remove("hidden");
+  }
+
+  function openPanel(id) {
+    document.getElementById(id).classList.remove("hidden");
+  }
+  function closePanel(id) {
+    document.getElementById(id).classList.add("hidden");
+  }
+
+  function renderSkillsPanel() {
+    const grid = document.getElementById("skills-grid");
+    if (grid.childElementCount || typeof IDENTITY === "undefined") return;
+    grid.innerHTML = Object.entries(IDENTITY.skills)
+      .map(
+        ([category, items]) => `
+      <div>
+        <p class="skills-category-title">${escapeHtml(category)}</p>
+        <div class="skills-tag-list">${items.map((s) => `<span class="tag">${escapeHtml(s)}</span>`).join("")}</div>
+      </div>
+    `
+      )
+      .join("");
+  }
+
+  function renderAboutPanel() {
+    const body = document.getElementById("about-body");
+    if (body.textContent || typeof IDENTITY === "undefined") return;
+    body.textContent = IDENTITY.about;
+    const edu = document.getElementById("about-education");
+    edu.innerHTML = IDENTITY.education
+      .map(
+        (ed) => `
+      <div class="about-education-entry">
+        <strong>${escapeHtml(ed.school)}</strong> — ${escapeHtml(ed.degree)}<br>
+        ${escapeHtml(ed.period)} · ${escapeHtml(ed.location)}<br>
+        ${escapeHtml(ed.details)}
+      </div>
+    `
+      )
+      .join("");
+  }
+
+  function wireCockpitUI() {
+    document.querySelectorAll("[data-close-panel]").forEach((btn) => {
+      btn.addEventListener("click", () => closePanel(btn.dataset.closePanel));
+    });
+    document.getElementById("cockpit-to-terminal").addEventListener("click", showTerminalTopView);
+    document.getElementById("cockpit-toggle").addEventListener("click", showCockpitTopView);
+
+    document.getElementById("hotspot-projects").addEventListener("click", showTerminalTopView);
+    document.getElementById("hotspot-skills").addEventListener("click", () => {
+      renderSkillsPanel();
+      openPanel("skills-panel");
+    });
+    document.getElementById("hotspot-about").addEventListener("click", () => {
+      renderAboutPanel();
+      openPanel("about-panel");
+    });
+    document.getElementById("hotspot-contact").addEventListener("click", () => openPanel("contact-panel"));
+  }
+
+  function attemptCockpit() {
+    let settled = false;
+    const safety = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      showTerminalTopView();
+    }, 6000);
+
+    if (!window.VesselCockpit) {
+      clearTimeout(safety);
+      showTerminalTopView();
+      return;
+    }
+
+    const hotspotDefs = [
+      { id: "projects", el: document.getElementById("hotspot-projects"), anchor: [-3, 0.3, -6] },
+      { id: "skills", el: document.getElementById("hotspot-skills"), anchor: [-1, 0.3, -6.3] },
+      { id: "about", el: document.getElementById("hotspot-about"), anchor: [1, 0.3, -6.3] },
+      { id: "contact", el: document.getElementById("hotspot-contact"), anchor: [3, 0.3, -6] },
+    ];
+
+    window.VesselCockpit.init(document.getElementById("cockpit-canvas-host"), hotspotDefs, {
+      onReady: () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(safety);
+        showCockpitTopView();
+        document.getElementById("cockpit-toggle").classList.remove("hidden");
+      },
+      onError: (err) => {
+        console.error("[cockpit] falling back to terminal:", err);
+        if (settled) return;
+        settled = true;
+        clearTimeout(safety);
+        showTerminalTopView();
+      },
+    });
+  }
+
   // ---------------- Init ----------------
 
   function initConsole() {
@@ -614,6 +733,7 @@
     buildSidebar();
     tickClock();
     setInterval(tickClock, 1000);
+    wireCockpitUI();
 
     document.getElementById("audio-toggle").addEventListener("click", toggleAudio);
     document.getElementById("plain-view-toggle").addEventListener("click", showResumeView);

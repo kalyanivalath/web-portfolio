@@ -35,6 +35,14 @@ const IDENTITY = {
   email: "kalyani.valath@gmail.com",
   github: "https://github.com/kalyanivalath",
   linkedin: "https://linkedin.com/in/kalyanivalath",
+  about:
+    "I'm a Computer Science student at the University of Oklahoma (expected Dec. 2026), focused on autonomous systems, robotics, and computer vision. Most of what's aboard this ship came out of coursework and internships: an autonomous surface vessel, a LiDAR-guided tour robot, an ASL recognition pipeline, and a stretch at NFP building AI-powered CRM tooling. I like projects where perception and control meet — reading the world well enough to act on it.",
+  skills: {
+    "Languages & Tools": ["Python", "C#", "Java", "C++", "SQL", "JavaScript", "TypeScript", "Git", "GitHub"],
+    "AI / ML & Data Science": ["Azure OpenAI", "Semantic Kernel", "Scikit-Learn", "Pandas", "NumPy", "NLP", "Prompt Engineering", "RAG"],
+    "Cloud & Systems": ["Azure", "AWS", "REST APIs", "PostgreSQL", "SQL Server", "Docker", "Application Insights", "CI/CD"],
+    "Frameworks": [".NET Framework", "ASP.NET Core", "React", "Next.js", "Node.js", "FastAPI"],
+  },
   education: [
     {
       school: "University of Oklahoma",

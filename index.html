@@ -19,6 +19,63 @@
     <button id="skip-boot" class="skip-boot" type="button">SKIP</button>
   </section>
 
+  <!-- COCKPIT VIEW — the default landing experience when WebGL + motion are
+       available; a single stylized 3D scene you look around and touch
+       controls on. Falls back straight to the terminal below otherwise. -->
+  <section id="cockpit-view" class="cockpit-view hidden" aria-label="Ship cockpit">
+    <div id="cockpit-canvas-host" class="cockpit-canvas-host" aria-hidden="true"></div>
+    <div class="depth-vignette" aria-hidden="true"></div>
+
+    <div class="cockpit-hud" aria-hidden="true">
+      <span class="cockpit-hud-line">M/V KALYANI — CAPTAIN'S CHAIR</span>
+      <span class="cockpit-hud-line dim">LOOK AROUND · TOUCH A CONTROL</span>
+    </div>
+
+    <button id="hotspot-projects" class="hotspot-btn" type="button">PROJECTS</button>
+    <button id="hotspot-skills" class="hotspot-btn" type="button">SKILLS</button>
+    <button id="hotspot-about" class="hotspot-btn" type="button">ABOUT ME</button>
+    <button id="hotspot-contact" class="hotspot-btn" type="button">CONTACT</button>
+
+    <button id="cockpit-to-terminal" class="cockpit-corner-btn" type="button">SWITCH TO TERMINAL VIEW</button>
+
+    <!-- Skills overlay -->
+    <div id="skills-panel" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="skills-panel-title">
+      <div class="modal-box wide">
+        <p id="skills-panel-title" class="modal-title">&gt; SKILLS</p>
+        <div class="skills-grid" id="skills-grid"><!-- populated by app.js --></div>
+        <div class="modal-actions">
+          <button class="modal-btn ghost" type="button" data-close-panel="skills-panel">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- About overlay -->
+    <div id="about-panel" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="about-panel-title">
+      <div class="modal-box wide">
+        <p id="about-panel-title" class="modal-title">&gt; ABOUT</p>
+        <p class="modal-body" id="about-body"><!-- populated by app.js --></p>
+        <div id="about-education"><!-- populated by app.js --></div>
+        <div class="modal-actions">
+          <button class="modal-btn ghost" type="button" data-close-panel="about-panel">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact overlay -->
+    <div id="contact-panel" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="contact-panel-title">
+      <div class="modal-box">
+        <p id="contact-panel-title" class="modal-title">&gt; CONTACT</p>
+        <p class="modal-body">Reach out any time.</p>
+        <div class="modal-actions">
+          <a class="modal-btn" href="mailto:kalyani.valath@gmail.com">EMAIL</a>
+          <a class="modal-btn" href="https://github.com/kalyanivalath" target="_blank" rel="noopener">GITHUB</a>
+          <a class="modal-btn" href="https://linkedin.com/in/kalyanivalath" target="_blank" rel="noopener">LINKEDIN</a>
+          <button class="modal-btn ghost" type="button" data-close-panel="contact-panel">CLOSE</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- MAIN CONSOLE (hidden until boot completes) -->
   <main id="console" class="console hidden">
 
@@ -67,6 +124,7 @@
       <span id="reduced-motion-note" class="reduced-motion-note hidden">STATIC DISPLAY MODE — MOTION REDUCED</span>
       <div class="footer-actions">
         <button id="audio-toggle" class="audio-toggle" type="button" aria-pressed="false">AMBIENCE: OFF</button>
+        <button id="cockpit-toggle" class="plain-toggle hidden" type="button">BACK TO COCKPIT</button>
         <button id="plain-view-toggle" class="plain-toggle" type="button">PREFER A PLAIN RESUME?</button>
       </div>
     </footer>
@@ -120,6 +178,7 @@
   <script src="js/panels/pointcloud.js" defer></script>
   <script src="js/panels/gesture.js" defer></script>
   <script src="js/panels/simcore.js" defer></script>
+  <script src="js/panels/cockpit.js" defer></script>
   <script src="js/app.js" defer></script>
 </body>
 </html>
