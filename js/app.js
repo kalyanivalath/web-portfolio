@@ -629,9 +629,13 @@
 
   function openPanel(id) {
     document.getElementById(id).classList.remove("hidden");
+    // Freeze cockpit look-around while a panel is open, otherwise moving the
+    // mouse to read/click inside the panel also drags the 3D scene behind it.
+    window.VesselCockpit && window.VesselCockpit.setPaused && window.VesselCockpit.setPaused(true);
   }
   function closePanel(id) {
     document.getElementById(id).classList.add("hidden");
+    window.VesselCockpit && window.VesselCockpit.setPaused && window.VesselCockpit.setPaused(false);
   }
 
   function renderSkillsPanel() {

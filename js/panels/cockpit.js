@@ -22,6 +22,10 @@ window.VesselCockpit = (function () {
   let raf = null;
   let renderer = null;
   let disposed = false;
+  // When a 2D overlay panel (skills/about/contact) is open, look-around
+  // should freeze — otherwise moving the mouse to read/click inside the
+  // panel also drags the 3D scene behind it.
+  let lookPaused = false;
 
   function isWebGLAvailable() {
     try {
@@ -129,56 +133,232 @@ window.VesselCockpit = (function () {
     const debris = new THREE.Points(debrisGeo, debrisMat);
     scene.add(debris);
 
-    // ---------------- Cockpit frame (wireframe) ----------------
-    const frameMat = new THREE.LineBasicMaterial({ color: 0x3dff9a, transparent: true, opacity: 0.55 });
-    const frameGroup = new THREE.Group();
+    // ---------------- Cabin shell ----------------
+    // Floor, side walls and ceiling around the seat so the view reads as
+    // sitting inside a vessel rather than a console floating in open space.
+    // The front stays open (no wall at CABIN_FRONT_Z) — that gap is the
+    // windshield the console sits under, framed by mullion lines, with the
+    // starfield/debris visible beyond it exactly as before.
+    const CABIN_HALF_W = 5.6;
+    const FLOOR_Y = -1.2;
+    const CEIL_Y = 2.3;
+    const CABIN_BACK_Z = 2.5; // just behind the seat
+    const CABIN_FRONT_Z = -6.6; // just past the console — the windshield line
+    const cabinDepth = CABIN_BACK_Z - CABIN_FRONT_Z;
+    const cabinCenterZ = (CABIN_BACK_Z + CABIN_FRONT_Z) / 2;
 
-    // Canopy arcs — a few simple curved struts overhead/around, built from
-    // straight segments (no curve geometry needed) so it reads as a canopy
-    // frame without needing anything fancier than line segments.
-    function addArc(radius, yOffset, zOffset, segments, colorHex) {
-      const pts = [];
-      for (let i = 0; i <= segments; i++) {
-        const a = Math.PI * (0.15 + (0.7 * i) / segments); // upper arc only
-        pts.push(new THREE.Vector3(Math.cos(a) * radius, Math.sin(a) * radius + yOffset, zOffset));
-      }
-      const geo = new THREE.BufferGeometry().setFromPoints(pts);
-      const mat = new THREE.LineBasicMaterial({ color: colorHex || 0x1f8a56, transparent: true, opacity: 0.5 });
-      return new THREE.Line(geo, mat);
+    function addShellPanel(w, h, d, x, y, z, color) {
+      const geo = new THREE.BoxGeometry(w, h, d);
+      const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color }));
+      mesh.position.set(x, y, z);
+      scene.add(mesh);
+
+      const edges = new THREE.LineSegments(
+        new THREE.EdgesGeometry(geo),
+        new THREE.LineBasicMaterial({ color: 0x1f8a56, transparent: true, opacity: 0.5 })
+      );
+      edges.position.copy(mesh.position);
+      scene.add(edges);
     }
-    frameGroup.add(addArc(7, -2, -3));
-    frameGroup.add(addArc(7, -2, -9));
-    frameGroup.add(addArc(6.4, -2, -6));
-    scene.add(frameGroup);
 
-    // Dashboard — a wireframe console arcing in front of the seat, with a
-    // handful of small raised "control" boxes (visual anchors for the
-    // hotspots; the actual clickable elements are the HTML buttons that
-    // track these positions, not these meshes).
-    const dashGeo = new THREE.BoxGeometry(9, 1.1, 0.4);
-    const dashWire = new THREE.WireframeGeometry(dashGeo);
-    const dashMat = new THREE.LineBasicMaterial({ color: 0x3dff9a, transparent: true, opacity: 0.7 });
-    const dash = new THREE.LineSegments(dashWire, dashMat);
-    dash.position.set(0, 0.1, -6.2);
-    dash.rotation.x = -0.15;
-    scene.add(dash);
+    // Floor + ceiling
+    addShellPanel(CABIN_HALF_W * 2, 0.08, cabinDepth, 0, FLOOR_Y, cabinCenterZ, 0x040a07);
+    addShellPanel(CABIN_HALF_W * 2, 0.08, cabinDepth, 0, CEIL_Y, cabinCenterZ, 0x040a07);
+    // Side walls
+    addShellPanel(0.12, CEIL_Y - FLOOR_Y, cabinDepth, -CABIN_HALF_W, (CEIL_Y + FLOOR_Y) / 2, cabinCenterZ, 0x050f0a);
+    addShellPanel(0.12, CEIL_Y - FLOOR_Y, cabinDepth, CABIN_HALF_W, (CEIL_Y + FLOOR_Y) / 2, cabinCenterZ, 0x050f0a);
 
-    const controlBoxes = new THREE.Group();
+    // Faint ceiling ribs and floor grid lines for a bit of texture/depth cueing.
+    const structureMat = new THREE.LineBasicMaterial({ color: 0x1f8a56, transparent: true, opacity: 0.35 });
+    for (let i = 1; i < 6; i++) {
+      const z = CABIN_BACK_Z - (i * cabinDepth) / 6;
+      const ribGeo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-CABIN_HALF_W, CEIL_Y - 0.06, z),
+        new THREE.Vector3(CABIN_HALF_W, CEIL_Y - 0.06, z),
+      ]);
+      scene.add(new THREE.Line(ribGeo, structureMat));
+
+      const floorGeo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-CABIN_HALF_W, FLOOR_Y + 0.05, z),
+        new THREE.Vector3(CABIN_HALF_W, FLOOR_Y + 0.05, z),
+      ]);
+      scene.add(new THREE.Line(floorGeo, structureMat));
+    }
+
+    // Windshield mullion frame at the open front boundary — reads as the
+    // window the console sits under, without blocking the starfield beyond.
+    const windshieldPts = [
+      new THREE.Vector3(-CABIN_HALF_W, FLOOR_Y, CABIN_FRONT_Z),
+      new THREE.Vector3(-CABIN_HALF_W, CEIL_Y, CABIN_FRONT_Z),
+      new THREE.Vector3(CABIN_HALF_W, CEIL_Y, CABIN_FRONT_Z),
+      new THREE.Vector3(CABIN_HALF_W, FLOOR_Y, CABIN_FRONT_Z),
+      new THREE.Vector3(-CABIN_HALF_W, FLOOR_Y, CABIN_FRONT_Z),
+    ];
+    scene.add(
+      new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(windshieldPts),
+        new THREE.LineBasicMaterial({ color: 0x3dff9a, transparent: true, opacity: 0.6 })
+      )
+    );
+
+    // ---------------- Console ----------------
+    // A shared base slab the modules visually sit on, plus one distinct
+    // module per hotspot — solid body + clean edge outline (EdgesGeometry,
+    // not WireframeGeometry, so flat panels don't get the diagonal
+    // "X" every box face shows when every triangle edge is drawn) + a
+    // procedurally-drawn screen so each control reads as its own thing
+    // instead of four identical floating boxes.
+
+    function makeScreenTexture(kind) {
+      const canvas = document.createElement("canvas");
+      canvas.width = 256;
+      canvas.height = 160;
+      const ctx = canvas.getContext("2d");
+
+      ctx.fillStyle = "#03100a";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = "#1f8a56";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
+
+      ctx.strokeStyle = "#3dff9a";
+      ctx.fillStyle = "#3dff9a";
+
+      if (kind === "projects") {
+        // a small manifest/file list, echoing the terminal's own sidebar
+        const rows = [
+          ["ONLINE", 0.7],
+          ["DEGRADED", 0.5],
+          ["RECOVERED", 0.6],
+          ["LOCKED", 0.35],
+        ];
+        rows.forEach((row, i) => {
+          const y = 26 + i * 30;
+          ctx.fillStyle = i === 3 ? "#ffb347" : "#3dff9a";
+          ctx.fillRect(18, y, 10, 10);
+          ctx.strokeStyle = "#2a6b48";
+          ctx.beginPath();
+          ctx.moveTo(38, y + 5);
+          ctx.lineTo(38 + 150 * row[1], y + 5);
+          ctx.stroke();
+        });
+      } else if (kind === "skills") {
+        // a simple bar chart
+        const heights = [0.9, 0.55, 0.75, 0.4, 0.65, 0.3];
+        const barW = 26;
+        heights.forEach((h, i) => {
+          const x = 20 + i * (barW + 8);
+          const barH = h * 110;
+          ctx.fillStyle = i % 2 === 0 ? "#3dff9a" : "#ffb347";
+          ctx.fillRect(x, 130 - barH, barW, barH);
+        });
+        ctx.strokeStyle = "#2a6b48";
+        ctx.beginPath();
+        ctx.moveTo(14, 130);
+        ctx.lineTo(242, 130);
+        ctx.stroke();
+      } else if (kind === "about") {
+        // a scan-ring dial
+        const cx = canvas.width / 2, cy = canvas.height / 2, r = 52;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r * 0.45, 0, Math.PI * 2);
+        ctx.stroke();
+        for (let i = 0; i < 12; i++) {
+          const a = (i / 12) * Math.PI * 2;
+          const inner = r + 4, outer = r + 12;
+          ctx.beginPath();
+          ctx.moveTo(cx + Math.cos(a) * inner, cy + Math.sin(a) * inner);
+          ctx.lineTo(cx + Math.cos(a) * outer, cy + Math.sin(a) * outer);
+          ctx.stroke();
+        }
+        ctx.beginPath();
+        ctx.moveTo(cx - r - 16, cy);
+        ctx.lineTo(cx + r + 16, cy);
+        ctx.moveTo(cx, cy - r - 16);
+        ctx.lineTo(cx, cy + r + 16);
+        ctx.stroke();
+      } else if (kind === "contact") {
+        // a signal waveform + antenna bars
+        ctx.beginPath();
+        for (let x = 20; x <= 190; x += 4) {
+          const y = 80 + Math.sin(x * 0.15) * 30 * Math.exp(-Math.abs(x - 105) / 90);
+          if (x === 20) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        for (let i = 0; i < 4; i++) {
+          const barH = 14 + i * 12;
+          ctx.fillStyle = "#ffb347";
+          ctx.fillRect(206 + i * 10, 130 - barH, 6, barH);
+        }
+      }
+
+      return canvas;
+    }
+
+    const consoleGroup = new THREE.Group();
+    const indicatorLights = []; // { material, phase } — pulsed in the render loop
+
+    // Shared base the four modules sit on top of.
+    const baseGeo = new THREE.BoxGeometry(9, 0.35, 0.9);
+    const baseMat = new THREE.MeshBasicMaterial({ color: 0x060d09 });
+    const base = new THREE.Mesh(baseGeo, baseMat);
+    base.position.set(0, -0.78, -6.1);
+    consoleGroup.add(base);
+
+    const baseEdges = new THREE.LineSegments(
+      new THREE.EdgesGeometry(baseGeo),
+      new THREE.LineBasicMaterial({ color: 0x1f8a56, transparent: true, opacity: 0.6 })
+    );
+    baseEdges.position.copy(base.position);
+    consoleGroup.add(baseEdges);
+
+    // Shared module dimensions — also referenced by updateHotspots() below
+    // so the HTML button label can be projected from a point at the base of
+    // each panel (below the screen art and indicator lights) rather than
+    // dead center, where it would sit on top of the drawn screen content.
+    const MODULE_W = 1.7, MODULE_H = 1.05, MODULE_D = 0.55;
+
     (hotspots || []).forEach((h) => {
-      const geo = new THREE.BoxGeometry(0.5, 0.35, 0.3);
-      const wire = new THREE.WireframeGeometry(geo);
-      const mat = new THREE.LineBasicMaterial({ color: 0xffb347, transparent: true, opacity: 0.85 });
-      const box = new THREE.LineSegments(wire, mat);
-      box.position.set(h.anchor[0], h.anchor[1], h.anchor[2]);
-      controlBoxes.add(box);
+      const moduleGroup = new THREE.Group();
+      const bodyW = MODULE_W, bodyH = MODULE_H, bodyD = MODULE_D;
 
-      // small glow point at the same spot
-      const glowGeo = new THREE.BufferGeometry();
-      glowGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(h.anchor), 3));
-      const glowMat = new THREE.PointsMaterial({ color: 0x3dff9a, size: 0.25, transparent: true, opacity: 0.9, sizeAttenuation: true });
-      controlBoxes.add(new THREE.Points(glowGeo, glowMat));
+      const bodyGeo = new THREE.BoxGeometry(bodyW, bodyH, bodyD);
+      const bodyMat = new THREE.MeshBasicMaterial({ color: 0x081410 });
+      moduleGroup.add(new THREE.Mesh(bodyGeo, bodyMat));
+      moduleGroup.add(
+        new THREE.LineSegments(
+          new THREE.EdgesGeometry(bodyGeo),
+          new THREE.LineBasicMaterial({ color: 0x3dff9a, transparent: true, opacity: 0.85 })
+        )
+      );
+
+      const texture = new THREE.CanvasTexture(makeScreenTexture(h.id));
+      const screenGeo = new THREE.PlaneGeometry(bodyW * 0.8, bodyH * 0.62);
+      const screenMat = new THREE.MeshBasicMaterial({ map: texture });
+      const screen = new THREE.Mesh(screenGeo, screenMat);
+      screen.position.set(0, bodyH * 0.08, bodyD / 2 + 0.01);
+      moduleGroup.add(screen);
+
+      for (let i = 0; i < 3; i++) {
+        const lightGeo = new THREE.BoxGeometry(0.09, 0.09, 0.04);
+        const lightMat = new THREE.MeshBasicMaterial({
+          color: i === 1 ? 0xffb347 : 0x3dff9a, transparent: true, opacity: 0.9,
+        });
+        const light = new THREE.Mesh(lightGeo, lightMat);
+        light.position.set(-bodyW * 0.3 + i * bodyW * 0.3, -bodyH * 0.44, bodyD / 2 + 0.03);
+        moduleGroup.add(light);
+        indicatorLights.push({ material: lightMat, phase: Math.random() * 10 });
+      }
+
+      moduleGroup.position.set(h.anchor[0], h.anchor[1], h.anchor[2]);
+      consoleGroup.add(moduleGroup);
     });
-    scene.add(controlBoxes);
+
+    scene.add(consoleGroup);
 
     // ---------------- Look-around (no pointer lock — just follows input) ----------------
     let targetYaw = 0;
@@ -195,6 +375,7 @@ window.VesselCockpit = (function () {
     }
 
     function onMouseMove(e) {
+      if (lookPaused) return;
       const nx = (e.clientX / window.innerWidth) * 2 - 1;
       const ny = (e.clientY / window.innerHeight) * 2 - 1;
       setLookFromNormalized(nx, ny);
@@ -209,6 +390,7 @@ window.VesselCockpit = (function () {
     let touchBasePitch = 0;
 
     function onTouchStart(e) {
+      if (lookPaused) return;
       if (!e.touches || !e.touches[0]) return;
       touchActive = true;
       touchStartX = e.touches[0].clientX;
@@ -217,6 +399,7 @@ window.VesselCockpit = (function () {
       touchBasePitch = targetPitch;
     }
     function onTouchMove(e) {
+      if (lookPaused) return;
       if (!touchActive || !e.touches || !e.touches[0]) return;
       const dx = (e.touches[0].clientX - touchStartX) / window.innerWidth;
       const dy = (e.touches[0].clientY - touchStartY) / window.innerHeight;
@@ -235,7 +418,15 @@ window.VesselCockpit = (function () {
     function updateHotspots() {
       (hotspots || []).forEach((h) => {
         if (!h.el) return;
-        projectVec.set(h.anchor[0], h.anchor[1], h.anchor[2]);
+        // Project from the base edge of the panel, not its center — the
+        // screen art and indicator lights already occupy the middle/top of
+        // each module, so the button reads as a labeled control strip
+        // beneath the display instead of overlapping it.
+        projectVec.set(
+          h.anchor[0],
+          h.anchor[1] - MODULE_H / 2 - 0.08,
+          h.anchor[2] + MODULE_D / 2 + 0.25
+        );
         projectVec.project(camera);
 
         const behind = projectVec.z > 1;
@@ -269,8 +460,8 @@ window.VesselCockpit = (function () {
 
       stars.rotation.y = t * 0.02;
       debris.rotation.y = t * 0.015;
-      controlBoxes.children.forEach((child, i) => {
-        if (child.isPoints) child.material.opacity = 0.7 + Math.sin(t * 40 + i) * 0.2;
+      indicatorLights.forEach((l) => {
+        l.material.opacity = 0.5 + Math.sin(t * 30 + l.phase) * 0.4;
       });
 
       renderer.render(scene, camera);
@@ -303,5 +494,10 @@ window.VesselCockpit = (function () {
     };
   }
 
-  return { init };
+  return {
+    init,
+    setPaused(paused) {
+      lookPaused = !!paused;
+    },
+  };
 })();
