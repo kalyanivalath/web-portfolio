@@ -27,7 +27,7 @@
     <div class="depth-vignette" aria-hidden="true"></div>
 
     <div class="cockpit-hud" aria-hidden="true">
-      <span class="cockpit-hud-line">M/V KALYANI — CAPTAIN'S CHAIR</span>
+      <span class="cockpit-hud-line">KALYANI — CAPTAIN'S CHAIR</span>
       <span class="cockpit-hud-line dim">LOOK AROUND · TOUCH A CONTROL</span>
     </div>
 
@@ -51,12 +51,23 @@
 
     <!-- About overlay -->
     <div id="about-panel" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="about-panel-title">
-      <div class="modal-box wide">
+      <div class="modal-box wide scroll">
         <p id="about-panel-title" class="modal-title">&gt; ABOUT</p>
-        <p class="modal-body" id="about-body"><!-- populated by app.js --></p>
+        <div class="modal-body" id="about-body"><!-- populated by app.js --></div>
         <div id="about-education"><!-- populated by app.js --></div>
         <div class="modal-actions">
           <button class="modal-btn ghost" type="button" data-close-panel="about-panel">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Projects overlay -->
+    <div id="projects-panel" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="projects-panel-title">
+      <div class="modal-box wide scroll">
+        <p id="projects-panel-title" class="modal-title">&gt; PROJECTS</p>
+        <div class="projects-list" id="projects-list"><!-- populated by app.js --></div>
+        <div class="modal-actions">
+          <button class="modal-btn ghost" type="button" data-close-panel="projects-panel">CLOSE</button>
         </div>
       </div>
     </div>
@@ -83,7 +94,7 @@
       <div class="header-row">
         <div class="vessel-id">
           <span class="label">VESSEL</span>
-          <span class="value">M/V KALYANI</span>
+          <span class="value">KALYANI</span>
         </div>
         <div class="hull-status">
           <span class="label">HULL INTEGRITY</span>
@@ -135,7 +146,7 @@
   <div id="plain-prompt" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="plain-prompt-title">
     <div class="modal-box">
       <p id="plain-prompt-title" class="modal-title">&gt; INCOMING TRANSMISSION</p>
-      <p class="modal-body">Prefer a straightforward resume instead of digging through a derelict ship? No hard feelings.</p>
+      <p class="modal-body">Prefer a straightforward resume instead of digging through through the ship? No hard feelings.</p>
       <div class="modal-actions">
         <button id="plain-prompt-accept" class="modal-btn" type="button">SHOW ME THE RESUME</button>
         <button id="plain-prompt-dismiss" class="modal-btn ghost" type="button">STAY IN THE TERMINAL</button>

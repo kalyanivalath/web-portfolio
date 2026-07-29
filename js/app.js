@@ -569,6 +569,7 @@
       <button class="resume-back" id="resume-back-btn" type="button">&larr; BACK TO THE TERMINAL</button>
       <h1>${escapeHtml(IDENTITY.name)}</h1>
       <p class="resume-tagline">${escapeHtml(IDENTITY.tagline)}</p>
+      ${IDENTITY.availability ? `<p class="resume-tagline">${escapeHtml(IDENTITY.availability)}</p>` : ""}
       <p class="resume-contact">${links}</p>
 
       <h2>Education</h2>
@@ -613,9 +614,9 @@
   // ---------------- Cockpit ----------------
   // The default landing view when WebGL + motion are available: a single
   // 3D captain's-chair scene (js/panels/cockpit.js) with four controls that
-  // open overlay panels. PROJECTS just jumps into the terminal below, since
-  // that's already the full project-browsing experience (CRYPTO decrypt
-  // gate included) — no need to rebuild it a second time in 3D.
+  // open overlay panels. PROJECTS opens an in-cockpit panel listing the
+  // manifest; each entry's "OPEN FULL LOG" drops into the terminal already
+  // focused on that project (CRYPTO decrypt gate included).
 
   function showCockpitTopView() {
     document.getElementById("cockpit-view").classList.remove("hidden");
@@ -655,8 +656,19 @@
 
   function renderAboutPanel() {
     const body = document.getElementById("about-body");
-    if (body.textContent || typeof IDENTITY === "undefined") return;
-    body.textContent = IDENTITY.about;
+    if (body.childElementCount || typeof IDENTITY === "undefined") return;
+
+    const bioHtml = IDENTITY.about.map((para) => `<p>${escapeHtml(para)}</p>`).join("");
+
+    const why = IDENTITY.whyThisSite;
+    const whyHtml = why
+      ? `<p class="modal-subtitle">${escapeHtml(why.heading)}</p>${why.paragraphs
+          .map((para) => `<p>${escapeHtml(para)}</p>`)
+          .join("")}`
+      : "";
+
+    body.innerHTML = bioHtml + whyHtml;
+
     const edu = document.getElementById("about-education");
     edu.innerHTML = IDENTITY.education
       .map(
@@ -671,6 +683,38 @@
       .join("");
   }
 
+  function renderProjectsPanel() {
+    const list = document.getElementById("projects-list");
+    if (!list || list.childElementCount || typeof VESSEL_MANIFEST === "undefined") return;
+
+    list.innerHTML = CATEGORY_ORDER.flatMap((cat) => VESSEL_MANIFEST.filter((p) => p.category === cat))
+      .map(
+        (p) => `
+      <div class="project-card">
+        <div class="project-card-head">
+          <span class="project-card-title">${escapeHtml(p.plainName || p.designation)}</span>
+          <span class="project-card-status">${escapeHtml(getEffectiveStatus(p))}</span>
+        </div>
+        <div class="project-card-sub">${escapeHtml(p.affiliation)} · ${escapeHtml(p.period)}</div>
+        <p class="project-card-summary">${escapeHtml(p.summary)}</p>
+        <div class="project-card-tags">${p.stack.map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>
+        <div class="project-card-actions">
+          <button class="modal-btn ghost" type="button" data-open-log="${escapeHtml(p.id)}">OPEN FULL LOG</button>
+        </div>
+      </div>
+    `
+      )
+      .join("");
+
+    list.querySelectorAll("[data-open-log]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        closePanel("projects-panel");
+        showTerminalTopView();
+        selectProject(btn.dataset.openLog);
+      });
+    });
+  }
+
   function wireCockpitUI() {
     document.querySelectorAll("[data-close-panel]").forEach((btn) => {
       btn.addEventListener("click", () => closePanel(btn.dataset.closePanel));
@@ -678,7 +722,10 @@
     document.getElementById("cockpit-to-terminal").addEventListener("click", showTerminalTopView);
     document.getElementById("cockpit-toggle").addEventListener("click", showCockpitTopView);
 
-    document.getElementById("hotspot-projects").addEventListener("click", showTerminalTopView);
+    document.getElementById("hotspot-projects").addEventListener("click", () => {
+      renderProjectsPanel();
+      openPanel("projects-panel");
+    });
     document.getElementById("hotspot-skills").addEventListener("click", () => {
       renderSkillsPanel();
       openPanel("skills-panel");

@@ -35,8 +35,22 @@ const IDENTITY = {
   email: "kalyani.valath@gmail.com",
   github: "https://github.com/kalyanivalath",
   linkedin: "https://linkedin.com/in/kalyanivalath",
-  about:
-    "I'm a Computer Science student at the University of Oklahoma (expected Dec. 2026), focused on autonomous systems, robotics, and computer vision. Most of what's aboard this ship came out of coursework and internships: an autonomous surface vessel, a LiDAR-guided tour robot, an ASL recognition pipeline, and a stretch at NFP building AI-powered CRM tooling. I like projects where perception and control meet — reading the world well enough to act on it.",
+  about: [
+    "I'm a Computer Science student at the University of Oklahoma, graduating in December 2026, with a passion for robotics, autonomous systems, and computer vision. I'm drawn to projects where software doesn't just process information: it understands its surroundings well enough to make decisions and interact with the real world.",
+    "Everything aboard this ship represents something I've genuinely enjoyed building: an autonomous surface vessel, a LiDAR-guided tour robot, an ASL recognition pipeline, and AI-powered CRM tools from my internship at NFP. Each project challenged me in a different way, but they all taught me the same thing: the best software comes from understanding both the technical problem and the people using it.",
+    "I'm always looking for opportunities to learn something new, whether that's experimenting with a different technology, improving a system I've already built, or finding a cleaner way to solve a problem. I care just as much about writing code that's easy for others to understand as I do about getting it to work.",
+  ],
+  whyThisSite: {
+    heading: "Why This Website?",
+    paragraphs: [
+      "This portfolio is a little different, and that's intentional.",
+      "I built it as a ship because I've always loved eerie, dystopian worlds and the storytelling behind them. Rather than creating another portfolio that looks like everyone else's, I wanted this one to feel like an experience. It's only the first iteration, and I already have plenty of ideas for where I want to take it next.",
+      "Gaming has always been one of my biggest hobbies, so I wanted to borrow some of the things I enjoy most about games (exploration, atmosphere, and small interactive details) and bring them into a portfolio. The 2D elements are there to make learning about my projects a little more engaging than scrolling through a traditional resume.",
+      "If that's not your style, no worries: there's also a button below for a simpler version.",
+      "Beyond the design, this site reflects how I approach software engineering. I care a lot about building things around the people who will actually use them. Whether I'm working with teammates, professors, or clients, I try to understand what they need first and then build something that fits those needs, not just something that works. I also believe good code should be easy to read, maintain, and build on, because great software isn't just about solving today's problem: it's about making tomorrow's work easier too.",
+    ],
+  },
+  availability: "Open to relocation",
   skills: {
     "Languages & Tools": ["Python", "C#", "Java", "C++", "SQL", "JavaScript", "TypeScript", "Git", "GitHub"],
     "AI / ML & Data Science": ["Azure OpenAI", "Semantic Kernel", "Scikit-Learn", "Pandas", "NumPy", "NLP", "Prompt Engineering", "RAG"],
@@ -90,7 +104,7 @@ const VESSEL_MANIFEST = [
     period: "SPRING 2026 — ACTIVE",
     affiliation: "University of Oklahoma",
     summary:
-      "Autonomous surface vessel navigation combining GPS, IMU, and onboard proximity sensors for real-time localization, obstacle awareness, and path planning in dynamic environments.",
+      "A Python sensor-fusion dashboard that simulates GPS, IMU, compass, and radar data to estimate vessel position using Kalman filtering.",
     logLines: [
       "FUSING GPS + IMU + PROXIMITY SENSOR STREAMS...",
       "LOCALIZATION CONFIDENCE: WIDENING IN OPEN WATER",
@@ -220,9 +234,8 @@ const VESSEL_MANIFEST = [
       "TELEMETRY PIPELINE CUT DIAGNOSIS TIME ~35%",
     ],
     stack: ["C#", ".NET", "SQL", "Azure OpenAI", "Semantic Kernel", "Application Insights"],
-    links: [
-      { label: "SOURCE", url: "https://github.com/kalyanivalath" },
-    ],
+    // Internal company project — no public repo to link to.
+    links: [],
   },
   {
     id: "sim-survival-game",
