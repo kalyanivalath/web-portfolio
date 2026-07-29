@@ -338,12 +338,16 @@
     currentProjectId = id;
     const project = VESSEL_MANIFEST.find((p) => p.id === id);
     if (!project) return;
-    renderPanel(project); // may rebuild the sidebar via markRepaired()
+    renderPanel(project, document.getElementById("panel-viewport")); // may rebuild the sidebar via markRepaired()
     highlightActiveRow(); // ...so (re)apply the active state last
   }
 
-  function renderPanel(project) {
-    const viewport = document.getElementById("panel-viewport");
+  // Renders a full project panel (header, status, meta, lock-gate or
+  // summary/hero/log/stack/links) into whichever container is handed in —
+  // the terminal's #panel-viewport, or the cockpit's #project-detail-body.
+  // Kept container-agnostic so the same project view works in both places
+  // without duplicating the hero-mount / CRYPTO decrypt-gate logic.
+  function renderPanel(project, viewport) {
     viewport.innerHTML = "";
 
     const panel = document.createElement("article");
@@ -381,7 +385,7 @@
 
       document.getElementById(`decrypt-${project.id}`).addEventListener("click", () => {
         markRepaired(project.id);
-        selectProject(project.id);
+        renderPanel(project, viewport);
       });
       return;
     }
@@ -481,9 +485,19 @@
   let audioCtx = null;
   let audioNodes = null;
 
+  // There are two ambience toggles in the DOM — one in the terminal footer,
+  // one in the cockpit's quick-links row — both carry [data-audio-toggle]
+  // and stay in sync no matter which one is clicked.
+  function setAudioButtonsState(on) {
+    document.querySelectorAll("[data-audio-toggle]").forEach((btn) => {
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      btn.textContent = on ? "AMBIENCE: ON" : "AMBIENCE: OFF";
+    });
+  }
+
   function toggleAudio() {
-    const btn = document.getElementById("audio-toggle");
-    const on = btn.getAttribute("aria-pressed") === "true";
+    const anyBtn = document.querySelector("[data-audio-toggle]");
+    const on = anyBtn && anyBtn.getAttribute("aria-pressed") === "true";
 
     if (on) {
       if (audioNodes) {
@@ -492,8 +506,7 @@
       if (audioCtx) audioCtx.close();
       audioCtx = null;
       audioNodes = null;
-      btn.setAttribute("aria-pressed", "false");
-      btn.textContent = "AMBIENCE: OFF";
+      setAudioButtonsState(false);
       return;
     }
 
@@ -523,8 +536,7 @@
     lfo.start();
 
     audioNodes = [osc1, osc2, lfo];
-    btn.setAttribute("aria-pressed", "true");
-    btn.textContent = "AMBIENCE: ON";
+    setAudioButtonsState(true);
   }
 
   // ---------------- Plain resume view ----------------
@@ -728,10 +740,21 @@
     list.querySelectorAll("[data-open-log]").forEach((btn) => {
       btn.addEventListener("click", () => {
         closePanel("projects-panel");
-        showTerminalTopView();
-        selectProject(btn.dataset.openLog);
+        openProjectDetail(btn.dataset.openLog);
       });
     });
+  }
+
+  // Opens a single project's full detail (hero animation, summary, log,
+  // stack, source link — same content the old terminal panel showed) as an
+  // overlay right on top of the cockpit, via the same renderPanel() used by
+  // the terminal sidebar. CRYPTO's decrypt gate works exactly the same way
+  // here since it's the same function.
+  function openProjectDetail(id) {
+    const project = VESSEL_MANIFEST.find((p) => p.id === id);
+    if (!project) return;
+    renderPanel(project, document.getElementById("project-detail-body"));
+    openPanel("project-detail-panel");
   }
 
   function wireCockpitUI() {
@@ -754,6 +777,15 @@
       openPanel("about-panel");
     });
     document.getElementById("hotspot-contact").addEventListener("click", () => openPanel("contact-panel"));
+
+    const backToProjectsBtn = document.getElementById("project-detail-back");
+    if (backToProjectsBtn) {
+      backToProjectsBtn.addEventListener("click", () => {
+        closePanel("project-detail-panel");
+        renderProjectsPanel();
+        openPanel("projects-panel");
+      });
+    }
   }
 
   function attemptCockpit() {
@@ -805,7 +837,9 @@
     setInterval(tickClock, 1000);
     wireCockpitUI();
 
-    document.getElementById("audio-toggle").addEventListener("click", toggleAudio);
+    document.querySelectorAll("[data-audio-toggle]").forEach((btn) => {
+      btn.addEventListener("click", toggleAudio);
+    });
     document.getElementById("plain-view-toggle").addEventListener("click", showResumeView);
     document.getElementById("plain-prompt-accept").addEventListener("click", () => {
       dismissPlainPrompt();

@@ -48,6 +48,7 @@
       <a href="mailto:kalyani.valath@gmail.com">EMAIL</a>
       <a href="https://github.com/kalyanivalath" target="_blank" rel="noopener">GITHUB</a>
       <a href="https://linkedin.com/in/kalyanivalath" target="_blank" rel="noopener">LINKEDIN</a>
+      <button type="button" class="quick-links-resume" data-audio-toggle aria-pressed="false">AMBIENCE: OFF</button>
       <button type="button" class="quick-links-resume" data-open-resume>PLAIN RESUME</button>
     </div>
 
@@ -56,7 +57,12 @@
     <button id="hotspot-about" class="hotspot-btn" type="button">ABOUT ME</button>
     <button id="hotspot-contact" class="hotspot-btn" type="button">CONTACT</button>
 
-    <button id="cockpit-to-terminal" class="cockpit-corner-btn" type="button">SWITCH TO TERMINAL VIEW</button>
+    <!-- Terminal view is parked for now — every project's full detail opens
+         right here as a panel instead (see #project-detail-panel below), so
+         there's no longer a manual "switch to terminal" escape needed. The
+         terminal itself still exists as the reduced-motion/no-WebGL
+         fallback landing page. -->
+    <button id="cockpit-to-terminal" class="cockpit-corner-btn hidden" type="button">SWITCH TO TERMINAL VIEW</button>
 
     <!-- Skills overlay -->
     <div id="skills-panel" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="skills-panel-title">
@@ -88,6 +94,22 @@
         <div class="projects-list" id="projects-list"><!-- populated by app.js --></div>
         <div class="modal-actions">
           <button class="modal-btn ghost" type="button" data-close-panel="projects-panel">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Single-project detail overlay — opened from a project card's "OPEN
+         FULL LOG" button. Reuses the exact same renderPanel() the terminal
+         used to use, so the hero animation, log lines, stack tags, source
+         link, and CRYPTO decrypt gate all work identically, just inside a
+         panel instead of a full page switch. -->
+    <div id="project-detail-panel" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="project-detail-panel-title">
+      <div class="modal-box wide scroll">
+        <p id="project-detail-panel-title" class="modal-title">&gt; PROJECT LOG</p>
+        <div id="project-detail-body"><!-- populated by app.js via renderPanel() --></div>
+        <div class="modal-actions">
+          <button class="modal-btn ghost" type="button" id="project-detail-back">&larr; BACK TO PROJECTS</button>
+          <button class="modal-btn ghost" type="button" data-close-panel="project-detail-panel">CLOSE</button>
         </div>
       </div>
     </div>
@@ -154,7 +176,7 @@
     <footer class="console-footer">
       <span id="reduced-motion-note" class="reduced-motion-note hidden">STATIC DISPLAY MODE — MOTION REDUCED</span>
       <div class="footer-actions">
-        <button id="audio-toggle" class="audio-toggle" type="button" aria-pressed="false">AMBIENCE: OFF</button>
+        <button id="audio-toggle" class="audio-toggle" type="button" data-audio-toggle aria-pressed="false">AMBIENCE: OFF</button>
         <button id="cockpit-toggle" class="plain-toggle hidden" type="button">BACK TO COCKPIT</button>
         <button id="plain-view-toggle" class="plain-toggle" type="button">PREFER A PLAIN RESUME?</button>
       </div>

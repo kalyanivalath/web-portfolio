@@ -457,6 +457,9 @@ a:hover{ text-decoration: underline; }
 }
 .audio-toggle[aria-pressed="true"]{ color: var(--phosphor); border-color: var(--phosphor-dim); }
 
+/* Shared "on" state for any ambience toggle, regardless of which view it's in. */
+[data-audio-toggle][aria-pressed="true"]{ color: var(--phosphor); border-color: var(--phosphor-dim); background: rgba(61,255,154,0.06); }
+
 .footer-actions{
   display: flex;
   gap: 10px;
