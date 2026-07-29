@@ -753,11 +753,44 @@
   function openProjectDetail(id) {
     const project = VESSEL_MANIFEST.find((p) => p.id === id);
     if (!project) return;
-    renderPanel(project, document.getElementById("project-detail-body"));
+    // Open the panel FIRST, then render into it. Hero panels (pointcloud/
+    // gesture/simcore) size their canvas off container.clientWidth/Height
+    // synchronously at mount time — if the panel's still `.hidden` (display:
+    // none) when that runs, they measure 0x0 and the canvas never recovers
+    // since it only re-measures on a window resize event, not on becoming
+    // visible. This was the "ASL panel is just a black box" bug.
     openPanel("project-detail-panel");
+    renderPanel(project, document.getElementById("project-detail-body"));
+  }
+
+  // Every ".modal-overlay" (skills/about/projects/project-detail/contact/
+  // plain-prompt) can be dismissed by clicking its backdrop or pressing
+  // Escape, on top of whatever explicit close/back buttons it has.
+  function wireModalDismissal() {
+    function dismiss(overlay) {
+      if (overlay.id === "plain-prompt") {
+        dismissPlainPrompt();
+      } else {
+        closePanel(overlay.id);
+      }
+    }
+
+    document.querySelectorAll(".modal-overlay").forEach((overlay) => {
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) dismiss(overlay); // backdrop only, not the box itself
+      });
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      const open = document.querySelector(".modal-overlay:not(.hidden)");
+      if (open) dismiss(open);
+    });
   }
 
   function wireCockpitUI() {
+    wireModalDismissal();
+
     document.querySelectorAll("[data-close-panel]").forEach((btn) => {
       btn.addEventListener("click", () => closePanel(btn.dataset.closePanel));
     });
