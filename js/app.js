@@ -41,7 +41,26 @@
     { text: "CONSOLE READY.", cls: "ok" },
   ];
 
+  // Wires every "PLAIN RESUME" quick-link (boot screen + cockpit view both
+  // have one — see index.html's .quick-links blocks) to jump straight to
+  // the plain resume. If clicked during boot, skip the boot animation first
+  // so the state underneath is properly initialized by the time they close
+  // the resume view and land back on the ship.
+  function wireQuickLinks() {
+    document.querySelectorAll("[data-open-resume]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (btn.closest("#boot-screen")) {
+          const skipBtn = document.getElementById("skip-boot");
+          skipBtn && skipBtn.click();
+        }
+        showResumeView();
+      });
+    });
+  }
+
   function runBoot() {
+    wireQuickLinks();
+
     const bootLog = document.getElementById("boot-log");
     const bootScreen = document.getElementById("boot-screen");
     const skipBtn = document.getElementById("skip-boot");

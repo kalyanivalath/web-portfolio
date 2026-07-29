@@ -17,6 +17,16 @@
   <section id="boot-screen" class="boot-screen" aria-live="polite">
     <pre id="boot-log" class="boot-log"></pre>
     <button id="skip-boot" class="skip-boot" type="button">SKIP</button>
+
+    <!-- Always-visible escape hatch: reachable before the boot animation
+         even finishes, so a recruiter in a hurry never has to wait or
+         explore to get contact info or a plain resume. -->
+    <div class="quick-links" aria-label="Quick links">
+      <a href="mailto:kalyani.valath@gmail.com">EMAIL</a>
+      <a href="https://github.com/kalyanivalath" target="_blank" rel="noopener">GITHUB</a>
+      <a href="https://linkedin.com/in/kalyanivalath" target="_blank" rel="noopener">LINKEDIN</a>
+      <button type="button" class="quick-links-resume" data-open-resume>PLAIN RESUME</button>
+    </div>
   </section>
 
   <!-- COCKPIT VIEW — the default landing experience when WebGL + motion are
@@ -29,6 +39,16 @@
     <div class="cockpit-hud" aria-hidden="true">
       <span class="cockpit-hud-line">KALYANI — CAPTAIN'S CHAIR</span>
       <span class="cockpit-hud-line dim">LOOK AROUND · TOUCH A CONTROL</span>
+    </div>
+
+    <!-- Same always-visible escape hatch as the boot screen — no need to
+         find a hotspot or switch to the terminal just to get contact info
+         or bail to a plain resume. -->
+    <div class="quick-links" aria-label="Quick links">
+      <a href="mailto:kalyani.valath@gmail.com">EMAIL</a>
+      <a href="https://github.com/kalyanivalath" target="_blank" rel="noopener">GITHUB</a>
+      <a href="https://linkedin.com/in/kalyanivalath" target="_blank" rel="noopener">LINKEDIN</a>
+      <button type="button" class="quick-links-resume" data-open-resume>PLAIN RESUME</button>
     </div>
 
     <button id="hotspot-projects" class="hotspot-btn" type="button">PROJECTS</button>
