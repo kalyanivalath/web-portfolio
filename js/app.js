@@ -28,7 +28,7 @@
   // ---------------- Boot sequence ----------------
 
   const BOOT_LINES = [
-    { text: "M/V KALYANI — RECOVERED SYSTEMS LOG", cls: "ok" },
+    { text: "KALYANI — RECOVERED SYSTEMS LOG", cls: "ok" },
     { text: "" },
     { text: "INITIALIZING VESSEL CORE..." },
     { text: "LIFE SUPPORT: OFFLINE", cls: "err" },
