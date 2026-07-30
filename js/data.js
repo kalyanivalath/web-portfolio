@@ -36,18 +36,15 @@ const IDENTITY = {
   github: "https://github.com/kalyanivalath",
   linkedin: "https://linkedin.com/in/kalyanivalath",
   about: [
-    "I'm a Computer Science student at the University of Oklahoma, graduating in December 2026, with a passion for robotics, autonomous systems, and computer vision. I'm drawn to projects where software doesn't just process information: it understands its surroundings well enough to make decisions and interact with the real world.",
-    "Everything aboard this ship represents something I've genuinely enjoyed building: an autonomous surface vessel, a LiDAR-guided tour robot, an ASL recognition pipeline, and AI-powered CRM tools from my internship at NFP. Each project challenged me in a different way, but they all taught me the same thing: the best software comes from understanding both the technical problem and the people using it.",
-    "I'm always looking for opportunities to learn something new, whether that's experimenting with a different technology, improving a system I've already built, or finding a cleaner way to solve a problem. I care just as much about writing code that's easy for others to understand as I do about getting it to work.",
+    "I'm a Computer Science student at the University of Oklahoma (expected Dec. 2026) with a passion for robotics, autonomous systems, and computer vision. I love building things that interact with the real world, whether that's a LiDAR-guided robot, an ASL recognition pipeline, or AI-powered tools.",
+    "Outside of coding, you'll usually find me playing horror games, golfing, or working on another side project. I like figuring out how things work, and building software that's intuitive, reliable, and enjoyable to use.",
   ],
   whyThisSite: {
     heading: "Why This Website?",
     paragraphs: [
-      "This portfolio is a little different, and that's intentional.",
-      "I built it as a ship because I've always loved eerie, dystopian worlds and the storytelling behind them. Rather than creating another portfolio that looks like everyone else's, I wanted this one to feel like an experience. It's only the first iteration, and I already have plenty of ideas for where I want to take it next.",
-      "Gaming has always been one of my biggest hobbies, so I wanted to borrow some of the things I enjoy most about games (exploration, atmosphere, and small interactive details) and bring them into a portfolio. The 2D elements are there to make learning about my projects a little more engaging than scrolling through a traditional resume.",
-      "If that's not your style, no worries: there's also a button below for a simpler version.",
-      "Beyond the design, this site reflects how I approach software engineering. I care a lot about building things around the people who will actually use them. Whether I'm working with teammates, professors, or clients, I try to understand what they need first and then build something that fits those needs, not just something that works. I also believe good code should be easy to read, maintain, and build on, because great software isn't just about solving today's problem: it's about making tomorrow's work easier too.",
+      "I wanted this portfolio to feel less like reading a resume and more like exploring a game. I've always loved eerie, dystopian worlds, so building it as a ship felt right. It's still a work in progress (I've already got ideas for the next version), but I wanted it to show a bit more of who I am.",
+      "Gaming has always shaped how I think about design, so the small interactive details are here to make exploring my projects more enjoyable. Prefer to skip the adventure? There's a button below for a simpler version.",
+      "That's how I approach software too: thoughtful, easy to understand, and built around the people using it, whether it's a class project, an internship, or a client application, always aiming for code that's clean, maintainable, and made with the end user in mind.",
     ],
   },
   availability: "Open to relocation",
