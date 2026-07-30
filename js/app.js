@@ -495,22 +495,21 @@
     });
   }
 
-  function toggleAudio() {
-    const anyBtn = document.querySelector("[data-audio-toggle]");
-    const on = anyBtn && anyBtn.getAttribute("aria-pressed") === "true";
-
-    if (on) {
-      if (audioNodes) {
-        audioNodes.forEach((n) => { try { n.stop && n.stop(); } catch (e) {} });
-      }
-      if (audioCtx) audioCtx.close();
-      audioCtx = null;
-      audioNodes = null;
-      setAudioButtonsState(false);
-      return;
+  function stopAmbience() {
+    if (audioNodes) {
+      audioNodes.forEach((n) => { try { n.stop && n.stop(); } catch (e) {} });
     }
+    if (audioCtx) { try { audioCtx.close(); } catch (e) {} }
+    audioCtx = null;
+    audioNodes = null;
+    setAudioButtonsState(false);
+  }
 
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  function startAmbience() {
+    const AudioCtor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtor) return; // no Web Audio support — leave the toggle inert
+
+    audioCtx = new AudioCtor();
     const gain = audioCtx.createGain();
     gain.gain.value = 0.03;
     gain.connect(audioCtx.destination);
@@ -537,6 +536,29 @@
 
     audioNodes = [osc1, osc2, lfo];
     setAudioButtonsState(true);
+
+    // Browsers suspend a freshly created AudioContext until a real user
+    // gesture happens (autoplay policy) — since this can fire before any
+    // click (e.g. right after the boot animation finishes on its own), wire
+    // a one-time resume on the next interaction so the hum actually starts
+    // playing the moment the visitor does anything, even though the toggle
+    // already reads "ON" from the very first frame.
+    if (audioCtx.state === "suspended") {
+      const resumeOnce = () => {
+        if (audioCtx) audioCtx.resume().catch(() => {});
+        document.removeEventListener("pointerdown", resumeOnce);
+        document.removeEventListener("keydown", resumeOnce);
+      };
+      document.addEventListener("pointerdown", resumeOnce, { once: true });
+      document.addEventListener("keydown", resumeOnce, { once: true });
+    }
+  }
+
+  function toggleAudio() {
+    const anyBtn = document.querySelector("[data-audio-toggle]");
+    const on = anyBtn && anyBtn.getAttribute("aria-pressed") === "true";
+    if (on) stopAmbience();
+    else startAmbience();
   }
 
   // ---------------- Plain resume view ----------------
@@ -873,6 +895,10 @@
     document.querySelectorAll("[data-audio-toggle]").forEach((btn) => {
       btn.addEventListener("click", toggleAudio);
     });
+    // Ambience defaults to on — the visitor can toggle it off once they're
+    // actually in (see startAmbience()'s note on autoplay policy re: when
+    // sound actually kicks in vs. when the toggle first reads "ON").
+    startAmbience();
     document.getElementById("plain-view-toggle").addEventListener("click", showResumeView);
     document.getElementById("plain-prompt-accept").addEventListener("click", () => {
       dismissPlainPrompt();
