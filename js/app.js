@@ -544,12 +544,17 @@
 
     // Browsers suspend a freshly created AudioContext until a real user
     // gesture happens (autoplay policy) — this starts immediately on page
-    // load, before boot even finishes, so the very first mouse move, touch,
-    // click, or keypress anywhere on the page resumes it. The toggle reads
-    // "ON" from the first frame either way; this just closes the gap so
-    // sound actually starts as close to instantly as browsers allow.
+    // load, before boot even finishes, so it resumes the moment the visitor
+    // does anything. Only listen on events the browser actually counts as
+    // an activating gesture (click, keydown, touchend) — mousemove,
+    // pointerdown, and touchstart do NOT count in Chrome/Firefox/Safari, so
+    // listening on them was actively harmful: one would fire almost
+    // instantly, consume this whole one-shot listener via the {once:true}
+    // + removeEventListener-for-all-types below, and resume() would fail
+    // silently (caught by .catch()) since no real activation existed yet —
+    // leaving audio stuck suspended until a manual click on the toggle.
     if (audioCtx.state === "suspended") {
-      const resumeEvents = ["pointerdown", "mousemove", "touchstart", "keydown"];
+      const resumeEvents = ["click", "keydown", "touchend"];
       const resumeOnce = () => {
         if (audioCtx) audioCtx.resume().catch(() => {});
         resumeEvents.forEach((evt) => document.removeEventListener(evt, resumeOnce));
