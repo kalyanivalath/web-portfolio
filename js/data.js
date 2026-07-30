@@ -36,14 +36,14 @@ const IDENTITY = {
   github: "https://github.com/kalyanivalath",
   linkedin: "https://linkedin.com/in/kalyanivalath",
   about: [
-    "I'm a Computer Science student at the University of Oklahoma (expected Dec. 2026) with a passion for robotics, autonomous systems, and computer vision. I love building things that interact with the real world, whether that's a LiDAR-guided robot, an ASL recognition pipeline, or AI-powered tools.",
+    "Hello! My name is Kalyani Valath! I'm a Computer Science student at the University of Oklahoma (expected Dec. 2026) with a passion for robotics, autonomous systems, and computer vision. I love building things that help make my life easier and more fun and wish to do the same for others.",
     "Outside of coding, you'll usually find me playing horror games, golfing, or working on another side project. I like figuring out how things work, and building software that's intuitive, reliable, and enjoyable to use.",
   ],
   whyThisSite: {
     heading: "Why This Website?",
     paragraphs: [
-      "I wanted this portfolio to feel less like reading a resume and more like exploring a game. I've always loved eerie, dystopian worlds, so building it as a ship felt right. It's still a work in progress (I've already got ideas for the next version), but I wanted it to show a bit more of who I am.",
-      "Gaming has always shaped how I think about design, so the small interactive details are here to make exploring my projects more enjoyable. Prefer to skip the adventure? There's a button below for a simpler version.",
+      "I've always loved eerie, dystopian worlds, so building it a little dystopian felt right. It's still a work in progress (I've already got ideas for the next version), but I wanted it to show a bit more of who I am.",
+      "Gaming has always shaped how I think about design, so the small interactive details are here to make exploring my projects more enjoyable.",
       "That's how I approach software too: thoughtful, easy to understand, and built around the people using it, whether it's a class project, an internship, or a client application, always aiming for code that's clean, maintainable, and made with the end user in mind.",
     ],
   },
@@ -110,7 +110,7 @@ const VESSEL_MANIFEST = [
     ],
     stack: ["Python", "C++", "ROS2", "Gazebo", "Sensor Fusion", "Data Visualization"],
     links: [
-      { label: "SOURCE", url: "https://github.com/kalyanivalath" },
+      { label: "SOURCE", url: "https://github.com/kalyanivalath/sensor-fusion-navigation" },
     ],
     hero: "pointcloud",
   },
@@ -152,7 +152,7 @@ const VESSEL_MANIFEST = [
     ],
     stack: ["ROS2", "LiDAR", "Python", "Robotics", "Autonomous Navigation"],
     links: [
-      { label: "SOURCE", url: "https://github.com/kalyanivalath" },
+      { label: "SOURCE", url: "https://github.com/kalyanivalath/Intelligent-robotics-final" },
     ],
   },
   {
@@ -237,21 +237,21 @@ const VESSEL_MANIFEST = [
   {
     id: "sim-survival-game",
     designation: "SIMULATION CORE — SURVIVAL PROTOCOL",
-    plainName: "3D Survival Game (WebGL)",
+    plainName: "3D Game (WebGL)",
     category: "SIM",
     status: "ONLINE",
     period: "COMPLETED",
     affiliation: "University of Oklahoma",
     summary:
-      "Third-person 3D survival game built in WebGL — character movement, collision detection, dynamic lighting, day/night cycles, power-ups, and health tracking, hand-rolled with custom GLSL shaders.",
+      "Third-person 3D game built in WebGL — character movement, collision detection, dynamic lighting, ambient lighting, power-ups, and health tracking, hand-rolled with custom GLSL shaders.",
     logLines: [
       "RENDER LOOP: STABLE",
-      "DAY/NIGHT CYCLE + DYNAMIC LIGHTING — ACTIVE",
+      "COLLISION DETECTION + DYNAMIC LIGHTING — ACTIVE",
       "PLAYABLE BUILD AVAILABLE ON REQUEST",
     ],
     stack: ["JavaScript", "WebGL", "GLSL", "Computer Graphics", "Game Development"],
     links: [
-      { label: "SOURCE", url: "https://github.com/kalyanivalath" },
+      { label: "SOURCE", url: "https://cs-4053-final-graphics-project.vercel.app/" },
     ],
     hero: "simcore",
   },

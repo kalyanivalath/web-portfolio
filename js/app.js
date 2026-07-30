@@ -60,6 +60,11 @@
 
   function runBoot() {
     wireQuickLinks();
+    // Ambience starts immediately on page load, not once boot finishes or
+    // someone clicks something — see startAmbience()'s note on autoplay
+    // policy for how it closes the gap between "toggle reads ON" and
+    // "sound is actually audible."
+    startAmbience();
 
     const bootLog = document.getElementById("boot-log");
     const bootScreen = document.getElementById("boot-screen");
@@ -538,19 +543,18 @@
     setAudioButtonsState(true);
 
     // Browsers suspend a freshly created AudioContext until a real user
-    // gesture happens (autoplay policy) — since this can fire before any
-    // click (e.g. right after the boot animation finishes on its own), wire
-    // a one-time resume on the next interaction so the hum actually starts
-    // playing the moment the visitor does anything, even though the toggle
-    // already reads "ON" from the very first frame.
+    // gesture happens (autoplay policy) — this starts immediately on page
+    // load, before boot even finishes, so the very first mouse move, touch,
+    // click, or keypress anywhere on the page resumes it. The toggle reads
+    // "ON" from the first frame either way; this just closes the gap so
+    // sound actually starts as close to instantly as browsers allow.
     if (audioCtx.state === "suspended") {
+      const resumeEvents = ["pointerdown", "mousemove", "touchstart", "keydown"];
       const resumeOnce = () => {
         if (audioCtx) audioCtx.resume().catch(() => {});
-        document.removeEventListener("pointerdown", resumeOnce);
-        document.removeEventListener("keydown", resumeOnce);
+        resumeEvents.forEach((evt) => document.removeEventListener(evt, resumeOnce));
       };
-      document.addEventListener("pointerdown", resumeOnce, { once: true });
-      document.addEventListener("keydown", resumeOnce, { once: true });
+      resumeEvents.forEach((evt) => document.addEventListener(evt, resumeOnce, { once: true }));
     }
   }
 
@@ -895,10 +899,6 @@
     document.querySelectorAll("[data-audio-toggle]").forEach((btn) => {
       btn.addEventListener("click", toggleAudio);
     });
-    // Ambience defaults to on — the visitor can toggle it off once they're
-    // actually in (see startAmbience()'s note on autoplay policy re: when
-    // sound actually kicks in vs. when the toggle first reads "ON").
-    startAmbience();
     document.getElementById("plain-view-toggle").addEventListener("click", showResumeView);
     document.getElementById("plain-prompt-accept").addEventListener("click", () => {
       dismissPlainPrompt();
